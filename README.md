@@ -1,1 +1,2 @@
-# twisted-gcmclient
+# Twisted client for GCM
+
