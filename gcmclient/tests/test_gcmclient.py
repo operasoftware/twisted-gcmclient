@@ -38,6 +38,28 @@ class GCMClientTestCase(unittest.TestCase):
             client.url, data=data, headers=headers, pool=pool)
 
     @patch('gcmclient.treq.post')
+    def test_200_custom_headers(self, post_mock):
+        api_key = '123456789'
+        client = GCMClient(api_key)
+        registration_id = 'foo'
+        message = 'bar'
+        response = Mock(code=200)
+        response.json.return_value = {'failure': 0, 'canonical_ids': 0}
+        post_mock.return_value = response
+
+        custom_headers = {'Header': 'Value'}
+        client.send(registration_id, message, custom_headers=custom_headers)
+
+        data = json.dumps({'registration_ids': [registration_id],
+                           'data': message})
+        headers = {'Authorization': 'key=' + api_key,
+                   'Content-Type': 'application/json'}
+        headers.update(custom_headers)
+
+        post_mock.assert_called_once_with(
+            client.url, data=data, headers=headers, pool=pool)
+
+    @patch('gcmclient.treq.post')
     def test_200_dry_run(self, post_mock):
         api_key = '123456789'
         client = GCMClient(api_key)

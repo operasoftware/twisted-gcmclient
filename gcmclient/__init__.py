@@ -7,6 +7,8 @@ from twisted.web.client import HTTPConnectionPool
 
 import treq
 
+DEFAULT_SEND_URL = 'https://android.googleapis.com/gcm/send'
+
 logger = logging.getLogger(__name__)
 pool = HTTPConnectionPool(reactor)
 
@@ -91,12 +93,13 @@ class GCMClient(object):
         'NotRegistered': GCMClientNotRegisteredError
     }
 
-    def __init__(self, api_key):
+    def __init__(self, api_key, url=DEFAULT_SEND_URL):
         self.api_key = api_key
-        self.url = 'https://android.googleapis.com/gcm/send'
+        self.url = url
 
     @inlineCallbacks
-    def send(self, registration_id, message, dry_run=False):
+    def send(
+            self, registration_id, message, dry_run=False, custom_headers=None):
         payload = {
             'registration_ids': [registration_id],
             'data': message,
@@ -109,6 +112,9 @@ class GCMClient(object):
             'Authorization': 'key=%s' % self.api_key,
             'Content-Type': 'application/json'
         }
+
+        if custom_headers is not None:
+            headers.update(custom_headers)
 
         resp = yield treq.post(
             self.url, data=json.dumps(payload), headers=headers, pool=pool)
