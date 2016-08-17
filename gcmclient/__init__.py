@@ -3,9 +3,10 @@ import logging
 
 from twisted.internet import reactor
 from twisted.internet.defer import inlineCallbacks
-from twisted.web.client import HTTPConnectionPool
+from twisted.web.client import HTTPConnectionPool, Agent
 
-import treq
+from treq.client import HTTPClient
+
 
 DEFAULT_SEND_URL = 'https://android.googleapis.com/gcm/send'
 
@@ -71,6 +72,11 @@ class GCMClientMismatchSenderIdError(GCMClientError):
     pass
 
 
+def _get_http_client():
+    agent = Agent(reactor, pool=pool)
+    return HTTPClient(agent)
+
+
 class GCMClient(object):
     """
     Google Cloud Messaging (GCM) HTTP client. Based on
@@ -93,9 +99,10 @@ class GCMClient(object):
         'NotRegistered': GCMClientNotRegisteredError
     }
 
-    def __init__(self, api_key, url=DEFAULT_SEND_URL):
+    def __init__(self, api_key, url=DEFAULT_SEND_URL, http_client=None):
         self.api_key = api_key
         self.url = url
+        self.http_client = _get_http_client() if http_client is None else http_client
 
     @inlineCallbacks
     def send(
@@ -116,8 +123,10 @@ class GCMClient(object):
         if custom_headers is not None:
             headers.update(custom_headers)
 
-        resp = yield treq.post(
-            self.url, data=json.dumps(payload), headers=headers, pool=pool)
+        data = json.dumps(payload)
+
+        resp = yield self.http_client.post(
+            self.url, data=data, headers=headers)
 
         # Response handling based on:
         # * http://developer.android.com/google/gcm/http.html#response

@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 
-VERSION = '0.2'
+VERSION = '0.3'
 URL = 'https://github.com/operasoftware/twisted-gcmclient'
 DOWNLOAD_URL = URL + '/tarball/' + VERSION
 
