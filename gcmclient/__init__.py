@@ -8,7 +8,7 @@ from twisted.web.client import HTTPConnectionPool, Agent
 from treq.client import HTTPClient
 
 
-DEFAULT_SEND_URL = 'https://android.googleapis.com/gcm/send'
+DEFAULT_SEND_URL = 'https://fcm.googleapis.com/fcm/send'
 
 logger = logging.getLogger(__name__)
 pool = HTTPConnectionPool(reactor)
